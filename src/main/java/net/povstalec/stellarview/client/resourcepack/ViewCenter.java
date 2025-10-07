@@ -62,6 +62,9 @@ public class ViewCenter
 	@Nullable
 	protected ResourceKey<SpaceObject> viewCenterKey;
 	@Nullable
+	protected ResourceKey<SpaceObject> preferredStar;
+
+	@Nullable
 	protected ViewObjectRenderer viewObject;
 	
 	@Nullable
@@ -95,6 +98,7 @@ public class ViewCenter
     
     public static final Codec<ViewCenter> CODEC = RecordCodecBuilder.create(instance -> instance.group(
     		SpaceObject.RESOURCE_KEY_CODEC.optionalFieldOf("view_center").forGetter(ViewCenter::getViewCenterKey),
+			SpaceObject.RESOURCE_KEY_CODEC.optionalFieldOf("preferred_star").forGetter(ViewCenter::getPreferredStar),
 			Skybox.CODEC.listOf().optionalFieldOf("skyboxes").forGetter(ViewCenter::getSkyboxes),
 			
 			AxisRotation.CODEC.fieldOf("axis_rotation").forGetter(ViewCenter::getAxisRotation),
@@ -114,8 +118,8 @@ public class ViewCenter
 			Codec.BOOL.optionalFieldOf("stars_ignore_rain", false).forGetter(viewCenter -> viewCenter.starsIgnoreRain),
 			Codec.intRange(1, Integer.MAX_VALUE).optionalFieldOf("z_rotation_multiplier", 30000000).forGetter(viewCenter -> viewCenter.zRotationMultiplier)
 			).apply(instance, ViewCenter::new));
-	
-	public ViewCenter(Optional<ResourceKey<SpaceObject>> viewCenterKey, Optional<List<Skybox>> skyboxes, AxisRotation axisRotation,
+
+	public ViewCenter(Optional<ResourceKey<SpaceObject>> viewCenterKey, Optional<ResourceKey<SpaceObject>> preferredStar, Optional<List<Skybox>> skyboxes, AxisRotation axisRotation,
 			long rotationPeriod, DayBlending dayBlending, DayBlending sunDayBlending,
 			Optional<MeteorEffect.ShootingStar> shootingStar, Optional<MeteorEffect.MeteorShower> meteorShower,
 			boolean createHorizon, boolean createVoid,
@@ -132,6 +136,9 @@ public class ViewCenter
 		
 		if(viewCenterKey.isPresent())
 			this.viewCenterKey = viewCenterKey.get();
+
+		if(preferredStar.isPresent())
+			this.preferredStar = preferredStar.get();
 		
 		if(skyboxes.isPresent())
 			this.skyboxes = skyboxes.get();
@@ -234,7 +241,15 @@ public class ViewCenter
 		
 		return Optional.empty();
 	}
-	
+
+	public Optional<ResourceKey<SpaceObject>> getPreferredStar()
+	{
+		if(preferredStar != null)
+			return Optional.of(preferredStar);
+
+		return Optional.empty();
+	}
+
 	public Optional<List<Skybox>> getSkyboxes()
 	{
 		if(skyboxes != null)

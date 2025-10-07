@@ -1,6 +1,7 @@
 {
 	"view_center": "stellarview:planet/milky_way/sol/earth",
-	
+	"preferred_star": "stellarview:star/milky_way/sol",
+
 	"axis_rotation": { "x_axis": 0, "y_axis": -90, "z_axis": -90 },
 	"rotation_period": 24000,
 	

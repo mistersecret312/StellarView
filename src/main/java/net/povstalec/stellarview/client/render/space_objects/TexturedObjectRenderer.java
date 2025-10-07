@@ -6,14 +6,21 @@ import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.povstalec.stellarview.api.client.StellarViewRendering;
+import net.povstalec.stellarview.api.common.space_objects.SpaceObject;
 import net.povstalec.stellarview.api.common.space_objects.TexturedObject;
 import net.povstalec.stellarview.client.render.LightEffects;
+import net.povstalec.stellarview.client.resourcepack.ResourcepackReloadListener;
 import net.povstalec.stellarview.client.resourcepack.ViewCenter;
 import net.povstalec.stellarview.common.util.*;
 import org.joml.Matrix4f;
 import org.joml.Quaterniond;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
+
+import java.util.Optional;
 
 public abstract class TexturedObjectRenderer<T extends TexturedObject> extends SpaceObjectRenderer<T>
 {
@@ -98,7 +105,43 @@ public abstract class TexturedObjectRenderer<T extends TexturedObject> extends S
 		
 		RenderSystem.setShaderTexture(0, texture);
 		bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-		
+
+		sphericalCoords.toCartesianD();
+		ViewCenter center = StellarViewRendering.getViewCenter(level.dimension().location());
+		if(center != null && uv.topRight().hasPhaseHandler())
+		{
+			Optional<ResourceKey<SpaceObject>> preferredStar = center.getPreferredStar();
+			if(preferredStar.isPresent())
+			{
+				SpaceObject star = ResourcepackReloadListener.ReloadListener.getSpaceObject(preferredStar.get().location());
+				if(star != null)
+				{
+					SphericalCoords starSpherical = star.getCoords().skyPosition(level, center, partialTicks, true);
+
+					Vector3d starPos = starSpherical.toCartesianD();
+					Vector3d planetPos = sphericalCoords.toCartesianD();
+
+					Vector3d planetLight = starPos.sub(planetPos);
+
+					Vector3d planetObserver = planetPos.negate();
+
+					double dot = planetLight.dot(planetObserver);
+
+					double magMoonToSun = planetLight.length();
+					double magMoonToEarth = planetObserver.length();
+
+					double angleRad = Math.acos(dot / (magMoonToSun * magMoonToEarth));
+
+					double angleDeg = Math.toDegrees(angleRad);
+					Vector3d cross = planetObserver.cross(planetLight);
+
+					if(cross.dot(new Vector3d(0, 1, 0)) < 0)
+						angleDeg = -angleDeg;
+
+					//System.out.println("Phase angle: " + angleDeg + " Object: " + texture);
+				}
+			}
+		}
 		bufferbuilder.vertex(lastMatrix, corner00.x, corner00.y, corner00.z).uv(uv.topRight().u(ticks), uv.topRight().v(ticks)).endVertex();
 		bufferbuilder.vertex(lastMatrix, corner10.x, corner10.y, corner10.z).uv(uv.bottomRight().u(ticks), uv.bottomRight().v(ticks)).endVertex();
 		bufferbuilder.vertex(lastMatrix, corner11.x, corner11.y, corner11.z).uv(uv.bottomLeft().u(ticks), uv.bottomLeft().v(ticks)).endVertex();
@@ -108,7 +151,7 @@ public abstract class TexturedObjectRenderer<T extends TexturedObject> extends S
 		
 		RenderSystem.defaultBlendFunc();
 	}
-	
+
 	/**
 	 * Method for rendering an individual texture layer, override to change details of how this object's texture layers are rendered
 	 * @param textureLayer

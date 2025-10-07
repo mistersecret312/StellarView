@@ -187,6 +187,11 @@ public class ResourcepackReloadListener
 				StellarView.LOGGER.error("Could not load " + location.toString() + " " + e);
 			}
 		}
+
+		public static SpaceObject getSpaceObject(ResourceLocation location)
+		{
+			return spaceObjects.get(location).renderedObject();
+		}
 		
 		public static void setViewCenters(HashMap<ResourceLocation, SpaceObjectRenderer<?>> spaceObjects, HashMap<ResourceLocation, ViewCenter> viewCenters)
 		{

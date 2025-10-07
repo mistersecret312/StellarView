@@ -20,6 +20,8 @@ public final class DefaultViewCenters
 	{
 		public static final Codec<Overworld> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 	    		SpaceObject.RESOURCE_KEY_CODEC.optionalFieldOf("view_center").forGetter(ViewCenter::getViewCenterKey),
+				SpaceObject.RESOURCE_KEY_CODEC.optionalFieldOf("preferred_star").forGetter(ViewCenter::getPreferredStar),
+
 				Skybox.CODEC.listOf().optionalFieldOf("skyboxes").forGetter(ViewCenter::getSkyboxes),
 				
 				AxisRotation.CODEC.fieldOf("axis_rotation").forGetter(ViewCenter::getAxisRotation),
@@ -40,13 +42,13 @@ public final class DefaultViewCenters
 				Codec.intRange(0, Integer.MAX_VALUE).optionalFieldOf("z_rotation_multiplier", 30000000).forGetter(viewCenter -> viewCenter.zRotationMultiplier)
 				).apply(instance, Overworld::new));
 		
-		public Overworld(Optional<ResourceKey<SpaceObject>> viewCenterKey, Optional<List<Skybox>> skyboxes, AxisRotation axisRotation,
+		public Overworld(Optional<ResourceKey<SpaceObject>> viewCenterKey, Optional<ResourceKey<SpaceObject>> preferredStar, Optional<List<Skybox>> skyboxes, AxisRotation axisRotation,
 				long rotationPeriod, DayBlending dayBlending, DayBlending sunDayBlending,
 						 Optional<MeteorEffect.ShootingStar> shootingStar, Optional<MeteorEffect.MeteorShower> meteorShower,
 				boolean createHorizon, boolean createVoid,
 				boolean starsAlwaysVisible, boolean starsIgnoreFog, boolean starsIgnoreRain, int zRotationMultiplier)
 		{
-			super(viewCenterKey, skyboxes, axisRotation,
+			super(viewCenterKey, preferredStar, skyboxes, axisRotation,
 					rotationPeriod, dayBlending,sunDayBlending,
 					shootingStar, meteorShower, createHorizon, createVoid,
 					starsAlwaysVisible, starsIgnoreFog, starsIgnoreRain, zRotationMultiplier);
@@ -77,6 +79,8 @@ public final class DefaultViewCenters
 	{
 		public static final Codec<Nether> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 	    		SpaceObject.RESOURCE_KEY_CODEC.optionalFieldOf("view_center").forGetter(ViewCenter::getViewCenterKey),
+				SpaceObject.RESOURCE_KEY_CODEC.optionalFieldOf("preferred_star").forGetter(ViewCenter::getPreferredStar),
+
 				Skybox.CODEC.listOf().optionalFieldOf("skyboxes").forGetter(ViewCenter::getSkyboxes),
 				
 				AxisRotation.CODEC.fieldOf("axis_rotation").forGetter(ViewCenter::getAxisRotation),
@@ -97,13 +101,13 @@ public final class DefaultViewCenters
 				Codec.intRange(1, Integer.MAX_VALUE).optionalFieldOf("z_rotation_multiplier", 0).forGetter(viewCenter -> viewCenter.zRotationMultiplier)
 				).apply(instance, Nether::new));
 		
-		public Nether(Optional<ResourceKey<SpaceObject>> viewCenterKey, Optional<List<Skybox>> skyboxes, AxisRotation axisRotation,
+		public Nether(Optional<ResourceKey<SpaceObject>> viewCenterKey, Optional<ResourceKey<SpaceObject>> preferredStar, Optional<List<Skybox>> skyboxes, AxisRotation axisRotation,
 				long rotationPeriod, DayBlending dayBlending, DayBlending sunDayBlending,
 					  Optional<MeteorEffect.ShootingStar> shootingStar, Optional<MeteorEffect.MeteorShower> meteorShower,
 				boolean createHorizon, boolean createVoid,
 					  boolean starsAlwaysVisible, boolean starsIgnoreFog, boolean starsIgnoreRain, int zRotationMultiplier)
 		{
-			super(viewCenterKey, skyboxes, axisRotation,
+			super(viewCenterKey, preferredStar, skyboxes, axisRotation,
 					rotationPeriod, dayBlending,sunDayBlending,
 					shootingStar, meteorShower, createHorizon, createVoid,
 					starsAlwaysVisible, starsIgnoreFog, starsIgnoreRain, zRotationMultiplier);
@@ -129,6 +133,8 @@ public final class DefaultViewCenters
 	{
 		public static final Codec<End> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 	    		SpaceObject.RESOURCE_KEY_CODEC.optionalFieldOf("view_center").forGetter(ViewCenter::getViewCenterKey),
+				SpaceObject.RESOURCE_KEY_CODEC.optionalFieldOf("preferred_star").forGetter(ViewCenter::getPreferredStar),
+
 				Skybox.CODEC.listOf().optionalFieldOf("skyboxes").forGetter(ViewCenter::getSkyboxes),
 				
 				AxisRotation.CODEC.fieldOf("axis_rotation").forGetter(ViewCenter::getAxisRotation),
@@ -149,13 +155,13 @@ public final class DefaultViewCenters
 				Codec.intRange(1, Integer.MAX_VALUE).optionalFieldOf("z_rotation_multiplier", 0).forGetter(viewCenter -> viewCenter.zRotationMultiplier)
 				).apply(instance, End::new));
 		
-		public End(Optional<ResourceKey<SpaceObject>> viewCenterKey, Optional<List<Skybox>> skyboxes, AxisRotation axisRotation,
+		public End(Optional<ResourceKey<SpaceObject>> viewCenterKey, Optional<ResourceKey<SpaceObject>> preferredStar, Optional<List<Skybox>> skyboxes, AxisRotation axisRotation,
 				long rotationPeriod, DayBlending dayBlending, DayBlending sunDayBlending,
 				   Optional<MeteorEffect.ShootingStar> shootingStar, Optional<MeteorEffect.MeteorShower> meteorShower,
 				boolean createHorizon, boolean createVoid,
 				   boolean starsAlwaysVisible, boolean starsIgnoreFog, boolean starsIgnoreRain, int zRotationMultiplier)
 		{
-			super(viewCenterKey, skyboxes, axisRotation,
+			super(viewCenterKey, preferredStar, skyboxes, axisRotation,
 					rotationPeriod, dayBlending,sunDayBlending,
 					shootingStar, meteorShower, createHorizon, createVoid,
 					starsAlwaysVisible, starsIgnoreFog, starsIgnoreRain, zRotationMultiplier);

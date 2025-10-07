@@ -55,6 +55,11 @@ public class UV
 	{
 		return phaseHandler != null ? (v + phaseHandler.v(ticks)) / phaseHandler.rows() : v;
 	}
+
+	public boolean hasPhaseHandler()
+	{
+		return phaseHandler != null;
+	}
 	
 	//============================================================================================
 	//*************************************Saving and Loading*************************************
