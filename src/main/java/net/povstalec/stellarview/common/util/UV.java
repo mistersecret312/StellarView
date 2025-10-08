@@ -5,6 +5,8 @@ import javax.annotation.Nullable;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.povstalec.stellarview.StellarView;
 
 public class UV
 {
@@ -41,9 +43,9 @@ public class UV
 		return u;
 	}
 	
-	public float u(long ticks)
+	public float u(int phase)
 	{
-		return phaseHandler != null ? (u + phaseHandler.u(ticks)) / phaseHandler.columns() : u;
+		return phaseHandler != null ? (u + phaseHandler.u(phase)) / phaseHandler.columns() : u;
 	}
 	
 	public float v()
@@ -51,9 +53,9 @@ public class UV
 		return v;
 	}
 	
-	public float v(long ticks)
+	public float v(int phase)
 	{
-		return phaseHandler != null ? (v + phaseHandler.v(ticks)) / phaseHandler.rows() : v;
+		return phaseHandler != null ? (v + phaseHandler.v(phase)) / phaseHandler.rows() : v;
 	}
 
 	public boolean hasPhaseHandler()
@@ -180,7 +182,17 @@ public class UV
 		{
 			return topRight;
 		}
-		
+
+		public boolean hasPhaseHandling()
+		{
+			return phaseHandler.doPhases();
+		}
+
+		public PhaseHandler getPhaseHandler()
+		{
+			return phaseHandler;
+		}
+
 		//============================================================================================
 		//*************************************Saving and Loading*************************************
 		//============================================================================================
@@ -211,56 +223,46 @@ public class UV
 	
 	public static class PhaseHandler
 	{
-		public static final String TICKS_PER_PHASE = "ticks_per_phase";
-		public static final String PHASE_TICK_OFFSET = "phase_tick_offset";
 		public static final String COLUMNS = "columns";
 		public static final String ROWS = "rows";
-		
-		private final int ticksPerPhase;
-		private final int phaseTickOffset;
+
 		private final int columns;
 		private final int rows;
 		
 		private final int totalPhases;
-		private final int tickPeriod;
-		
+
 		private final boolean doPhases;
 		
-		public static final PhaseHandler DEFAULT_PHASE_HANDLER = new PhaseHandler(24000, 0, 1, 1);
+		public static final PhaseHandler DEFAULT_PHASE_HANDLER = new PhaseHandler(1, 1);
 		
 		public static final Codec<PhaseHandler> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-	    		Codec.intRange(1, Integer.MAX_VALUE).fieldOf("ticks_per_phase").forGetter((phaseHandler) -> phaseHandler.ticksPerPhase),
-	    		Codec.INT.optionalFieldOf("phase_tick_offset", 0).forGetter((phaseHandler) -> phaseHandler.phaseTickOffset),
 	    		Codec.INT.fieldOf("columns").forGetter((phaseHandler) -> phaseHandler.columns),
 	    		Codec.INT.fieldOf("rows").forGetter((phaseHandler) -> phaseHandler.rows)
 				).apply(instance, PhaseHandler::new));
 	    
-	    public PhaseHandler(int ticksPerPhase, int phaseTickOffset, int columns, int rows)
+	    public PhaseHandler(int columns, int rows)
 	    {
-			this.ticksPerPhase = ticksPerPhase;
-			this.phaseTickOffset = phaseTickOffset;
-			this.columns = columns;
+            this.columns = columns;
 			this.rows = rows;
 			
 			this.totalPhases = columns * rows;
-			this.tickPeriod = ticksPerPhase * totalPhases;
-			
+
 			this.doPhases = this.totalPhases != 1;
 	    }
 	    
 	    public int phase(long ticks)
 	    {
-			return (int) ((ticks + phaseTickOffset) % tickPeriod * totalPhases) / tickPeriod;
+			return 0;
 	    }
 	    
-	    public int u(long ticks)
+	    public int u(int phase)
 	    {
-	    	return phase(ticks) % columns;
+	    	return phase % columns;
 	    }
 	    
-	    public int v(long ticks)
+	    public int v(int phase)
 	    {
-	        return phase(ticks) / columns % rows;
+	        return phase / columns % rows;
 	    }
 	    
 	    public int rows()
@@ -285,8 +287,6 @@ public class UV
 		public CompoundTag serialize()
 		{
 			CompoundTag tag = new CompoundTag();
-			tag.putInt(TICKS_PER_PHASE, ticksPerPhase);
-			tag.putInt(PHASE_TICK_OFFSET, phaseTickOffset);
 			tag.putInt(COLUMNS, columns);
 			tag.putInt(ROWS, rows);
 			
@@ -295,7 +295,7 @@ public class UV
 		
 		public static PhaseHandler deserialize(CompoundTag tag)
 		{
-			return new PhaseHandler(tag.getInt(TICKS_PER_PHASE), tag.getInt(PHASE_TICK_OFFSET), tag.getInt(COLUMNS), tag.getInt(ROWS));
+			return new PhaseHandler(tag.getInt(COLUMNS), tag.getInt(ROWS));
 		}
 	}
 }

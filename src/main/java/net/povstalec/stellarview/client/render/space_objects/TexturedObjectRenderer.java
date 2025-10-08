@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceKey;
@@ -106,9 +107,9 @@ public abstract class TexturedObjectRenderer<T extends TexturedObject> extends S
 		RenderSystem.setShaderTexture(0, texture);
 		bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
-		sphericalCoords.toCartesianD();
 		ViewCenter center = StellarViewRendering.getViewCenter(level.dimension().location());
-		if(center != null && uv.topRight().hasPhaseHandler())
+		int phase = 0;
+		if(center != null && uv.hasPhaseHandling())
 		{
 			Optional<ResourceKey<SpaceObject>> preferredStar = center.getPreferredStar();
 			if(preferredStar.isPresent())
@@ -138,14 +139,23 @@ public abstract class TexturedObjectRenderer<T extends TexturedObject> extends S
 					if(cross.dot(new Vector3d(0, 1, 0)) < 0)
 						angleDeg = -angleDeg;
 
-					//System.out.println("Phase angle: " + angleDeg + " Object: " + texture);
+					// Normalize to [0, 360)
+					angleDeg = (angleDeg + 360.0) % 360.0;
+
+					// Rotate so that 0° = new (Sun behind), 180° = full
+					// If your current 0° corresponds to full, shift by 180°:
+					angleDeg = (angleDeg + 180.0) % 360.0;
+
+					// Map to phase index
+					int phases = uv.getPhaseHandler().columns() * uv.getPhaseHandler().rows();
+					phase = (int) Math.floor((angleDeg / 360.0) * phases);
 				}
 			}
 		}
-		bufferbuilder.vertex(lastMatrix, corner00.x, corner00.y, corner00.z).uv(uv.topRight().u(ticks), uv.topRight().v(ticks)).endVertex();
-		bufferbuilder.vertex(lastMatrix, corner10.x, corner10.y, corner10.z).uv(uv.bottomRight().u(ticks), uv.bottomRight().v(ticks)).endVertex();
-		bufferbuilder.vertex(lastMatrix, corner11.x, corner11.y, corner11.z).uv(uv.bottomLeft().u(ticks), uv.bottomLeft().v(ticks)).endVertex();
-		bufferbuilder.vertex(lastMatrix, corner01.x, corner01.y, corner01.z).uv(uv.topLeft().u(ticks), uv.topLeft().v(ticks)).endVertex();
+		bufferbuilder.vertex(lastMatrix, corner00.x, corner00.y, corner00.z).uv(uv.topRight().u(phase), uv.topRight().v(phase)).endVertex();
+		bufferbuilder.vertex(lastMatrix, corner10.x, corner10.y, corner10.z).uv(uv.bottomRight().u(phase), uv.bottomRight().v(phase)).endVertex();
+		bufferbuilder.vertex(lastMatrix, corner11.x, corner11.y, corner11.z).uv(uv.bottomLeft().u(phase), uv.bottomLeft().v(phase)).endVertex();
+		bufferbuilder.vertex(lastMatrix, corner01.x, corner01.y, corner01.z).uv(uv.topLeft().u(phase), uv.topLeft().v(phase)).endVertex();
 		
 		BufferUploader.drawWithShader(bufferbuilder.end());
 		
